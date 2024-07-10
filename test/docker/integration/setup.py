@@ -38,7 +38,7 @@ def get_env_vars():
 
 def get_config(env):
     keycloak_url   = "http://{}:{}".format(host, env["KEYCLOAK_PORT"])
-    discovery_path = "/auth/realms/master/.well-known/openid-configuration"
+    discovery_path = "/realms/master/.well-known/openid-configuration"
 
     return Config(
         keycloak_endpoint = keycloak_url,
@@ -61,7 +61,7 @@ class KeycloakClient:
         self._password = password
 
     def create_client(self, name, secret):
-        url     = "{}/auth/admin/realms/master/clients".format(self._endpoint)
+        url     = "{}/admin/realms/master/clients".format(self._endpoint)
         payload = {
             "clientId": name,
             "secret": secret,
@@ -80,7 +80,7 @@ class KeycloakClient:
         }
 
     def get_admin_token(self):
-        url     = "{}/auth/realms/master/protocol/openid-connect/token".format(self._endpoint)
+        url     = "{}/realms/master/protocol/openid-connect/token".format(self._endpoint)
         
         payload = "client_id=admin-cli&grant_type=password" + \
             "&username={}&password={}".format(self._username, self._password)
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     kong_client.delete_service("httpbin")
     kong_client.create_service("httpbin", "http://httpbin.org")
     kong_client.create_route("httpbin", ["/httpbin"])
-    kong_client.create_plugin("oidc", "httpbin", {
+    kong_client.create_plugin("kong-oidc", "httpbin", {
         "client_id":     config.client_id,
         "client_secret": config.client_secret,
         "discovery":     config.discovery,

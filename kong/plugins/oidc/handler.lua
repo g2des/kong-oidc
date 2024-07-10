@@ -1,18 +1,22 @@
-local BasePlugin = require "kong.plugins.base_plugin"
-local OidcHandler = BasePlugin:extend()
-local utils = require("kong.plugins.oidc.utils")
-local filter = require("kong.plugins.oidc.filter")
-local session = require("kong.plugins.oidc.session")
-
-OidcHandler.PRIORITY = 1000
+local utils = require("kong.plugins.kong-oidc.utils")
+local filter = require("kong.plugins.kong-oidc.filter")
+local session = require("kong.plugins.kong-oidc.session")
 
 
-function OidcHandler:new()
-  OidcHandler.super.new(self, "oidc")
-end
+local plugin = {
+  PRIORITY = 1000,
+  VERSION = "0.1.0"
+}
 
-function OidcHandler:access(config)
-  OidcHandler.super.access(self)
+
+function plugin:init_worker()
+
+  -- your custom code here
+  kong.log.debug("saying hi from the 'init_worker' handler")
+
+end --]]
+
+function plugin:access(config)
   local oidcConfig = utils.get_options(config, ngx)
 
   if filter.shouldProcessRequest(oidcConfig) then
@@ -80,4 +84,4 @@ function introspect(oidcConfig)
 end
 
 
-return OidcHandler
+return plugin
