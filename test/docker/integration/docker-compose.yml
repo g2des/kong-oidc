@@ -2,6 +2,9 @@ version: '1.0'
 
 services:
   kong-db:
+    # network_mode: bridge
+    networks:
+      - kong-oidc_devcontainer
     image: postgres${KONG_DB_TAG}
     ports:
       - ${KONG_DB_PORT}:5432
@@ -11,6 +14,9 @@ services:
       POSTGRES_DB:       ${KONG_DB_NAME}
 
   keycloak:
+    networks:
+      - kong-oidc_devcontainer
+    # network_mode: bridge
     image: quay.io/keycloak/keycloak${KEYCLOAK_TAG}
     ports:
       - ${KEYCLOAK_PORT}:8080
@@ -18,9 +24,13 @@ services:
     environment:
       KEYCLOAK_ADMIN:     ${KEYCLOAK_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PW}
+      KC_HOSTNAME: ${KECYLOAK_HOST}
     
 
   kong:
+    networks:
+      - kong-oidc_devcontainer
+    # network_mode: bridge
     image: g2des/kong-oidc:test
     ports:
       - 8000:8000
@@ -42,5 +52,11 @@ services:
       KONG_PROXY_ERROR_LOG:  /dev/stderr
       KONG_ADMIN_ERROR_LOG:  /dev/stderr
       KONG_PLUGINS: bundled,kong-oidc
+      KONG_LOG_LEVEL: debug
     depends_on:
       - kong-db
+
+networks:
+  kong-oidc_devcontainer:
+    name: kong-oidc_devcontainer_default
+    external: true

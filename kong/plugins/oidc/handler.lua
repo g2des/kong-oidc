@@ -18,27 +18,30 @@ end --]]
 
 function plugin:access(config)
   local oidcConfig = utils.get_options(config, ngx)
-
-  if filter.shouldProcessRequest(oidcConfig) then
+  ngx.log(ngx.DEBUG, "Access function plugin.")
+    if filter.shouldProcessRequest(oidcConfig) then
+    ngx.log(ngx.DEBUG, "Should process request.")
     session.configure(config)
     handle(oidcConfig)
   else
     ngx.log(ngx.DEBUG, "OidcHandler ignoring request, path: " .. ngx.var.request_uri)
   end
-
+  
   ngx.log(ngx.DEBUG, "OidcHandler done")
 end
 
 function handle(oidcConfig)
   local response
   if oidcConfig.introspection_endpoint then
+    ngx.log(ngx.DEBUG, "Introspecting solution.")
     response = introspect(oidcConfig)
     if response then
       utils.injectUser(response)
     end
   end
-
+  
   if response == nil then
+    ngx.log(ngx.DEBUG, "make_oidc called.")
     response = make_oidc(oidcConfig)
     if response then
       if (response.user) then
