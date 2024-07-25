@@ -6,10 +6,6 @@ set +o allexport
 echo $KONG_DB_PW
 
 (set -e
-  if [[ -z "$IP" ]]; then
-    echo "Please set the IP var to your local IP address. Example: export IP=192.168.0.1"
-    exit 1
-  fi
 
   (set -x
     # Tear down environment if it is running
@@ -18,15 +14,15 @@ echo $KONG_DB_PW
     docker-compose -f ${INTEGRATION_PATH}/docker-compose.yml up -d kong-db
   )
 
-  _wait_for_listener localhost:${KONG_DB_PORT}
+  _wait_for_listener integration-kong-db-1:${KONG_DB_PORT}
 
   (set -x
     docker-compose -f ${INTEGRATION_PATH}/docker-compose.yml run --rm kong kong migrations bootstrap
     docker-compose -f ${INTEGRATION_PATH}/docker-compose.yml up -d
   )
 
-  _wait_for_endpoint http://localhost:${KONG_HTTP_ADMIN_PORT}
-  _wait_for_endpoint http://localhost:${KEYCLOAK_PORT}
+  _wait_for_endpoint http://integration-kong-1:${KONG_HTTP_ADMIN_PORT}
+  _wait_for_endpoint http://integration-keycloak-1:${KEYCLOAK_PORT}
 
   (set -x
     python3 ${INTEGRATION_PATH}/setup.py
